@@ -33,7 +33,7 @@ app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/public"));
 
 // Seed Database with sample campgrounds and comments
-seedDB();
+// seedDB();
 
 
 // PASSPORT CONFIG
