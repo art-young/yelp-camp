@@ -4,6 +4,7 @@ var express         = require("express"),
     mongoose        = require("mongoose"),
     passport        = require("passport"),
     LocalStrategy   = require("passport-local"),
+    methodOverride  = require("method-override"),
     Campground      = require("./models/campground"),
     Comment         = require("./models/comment"),
     User            = require("./models/user"),
@@ -31,6 +32,9 @@ app.set("view engine", "ejs");
 
 // Serve the public directory
 app.use(express.static(__dirname + "/public"));
+
+// Use method override
+app.use(methodOverride("_method"));
 
 // Seed Database with sample campgrounds and comments
 // seedDB();

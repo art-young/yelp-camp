@@ -54,6 +54,9 @@ router.get("/new", isLoggedIn, function(req, res){
 router.get("/:id", function(req, res){
     
     // Find the campground with provided ID
+    // In the database, Comments are stored in Campground objects as reference ID's
+    // Use mongoose populate() method before executing callback function to get 
+    // the actual comment objects from the Comments collection
     Campground.findById(req.params.id).populate("comments").exec(function(err, foundCampground){
        if (err){
            console.log(err);
@@ -64,6 +67,43 @@ router.get("/:id", function(req, res){
        }
     });
     
+});
+
+// EDIT route - edit campground
+router.get("/:id/edit", function(req, res){
+    Campground.findById(req.params.id, function(err, foundCampground){
+       if (err){
+           res.redirect("/campgrounds");
+       } 
+       else {
+           res.render("campgrounds/edit", {campground: foundCampground});
+       }
+    });
+});
+
+// UPDATE campground route
+router.put("/:id", function(req, res){
+    // Find and update the correct campground
+    Campground.findByIdAndUpdate(req.params.id, req.body.campground, function(err, updatedCampground){
+       if (err){
+           res.redirect("/campgrounds");
+       } 
+       else {
+           res.redirect("/campgrounds/" + req.params.id);
+       }
+    });
+});
+
+// DESTROY campground route
+router.delete("/:id", function(req, res){
+    Campground.findByIdAndRemove(req.params.id, function(err){
+        if (err){
+            res.redirect("/campgrounds");
+        }
+        else {
+            res.redirect("/campgrounds");
+        }
+    })
 });
 
 // Middleware checking if user is logged in
