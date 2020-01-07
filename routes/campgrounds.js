@@ -70,19 +70,17 @@ router.get("/:id", function(req, res){
 });
 
 // EDIT route - edit campground
-router.get("/:id/edit", function(req, res){
+router.get("/:id/edit", checkCampgroundOwnership, function(req, res){
+    
+    // Find given campground and render edit page
     Campground.findById(req.params.id, function(err, foundCampground){
-       if (err){
-           res.redirect("/campgrounds");
-       } 
-       else {
-           res.render("campgrounds/edit", {campground: foundCampground});
-       }
+        res.render("campgrounds/edit", {campground: foundCampground});
     });
+    
 });
 
 // UPDATE campground route
-router.put("/:id", function(req, res){
+router.put("/:id",checkCampgroundOwnership, function(req, res){
     // Find and update the correct campground
     Campground.findByIdAndUpdate(req.params.id, req.body.campground, function(err, updatedCampground){
        if (err){
@@ -95,7 +93,7 @@ router.put("/:id", function(req, res){
 });
 
 // DESTROY campground route
-router.delete("/:id", function(req, res){
+router.delete("/:id", checkCampgroundOwnership, function(req, res){
     Campground.findByIdAndRemove(req.params.id, function(err){
         if (err){
             res.redirect("/campgrounds");
@@ -112,6 +110,34 @@ function isLoggedIn(req, res, next){
         return next();
     }
     res.redirect("/login");
+};
+
+// Middleware to check ownership
+function checkCampgroundOwnership(req, res, next){
+ // Check if User is logged in
+    if (req.isAuthenticated()){
+        
+        Campground.findById(req.params.id, function(err, foundCampground){
+           if (err){
+               res.redirect("back");
+           } 
+           else {
+                // Does User own the campground?
+                // Mongoose method to compare String id to Mongoose object id
+                if (foundCampground.author.id.equals(req.user._id)){
+                    // This is where the next part of the code runs
+                    next();
+                }
+                else {
+                    res.redirect("back");
+                }
+           }
+        });
+    }
+    // Redirect to previous page
+    else {
+        res.redirect("back");
+    }  
 };
 
 module.exports = router;
