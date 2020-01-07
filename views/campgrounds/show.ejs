@@ -2,6 +2,8 @@
 
 <div class="container">
     <div class='row'>
+        
+        <!-- Left sidebar taking up 25% or 3/12 grid columns -->
         <div class="col-md-3">
             <p class="lead">YelpCamp</p>
             <div class="list-group">
@@ -10,6 +12,8 @@
                 <li class="list-group-item">Info 3</li>
             </div>
         </div>
+        
+        <!-- Main section taking up 75% or 9/12 grid columns -->
         <div class="col-md-9">
             <div class="thumbnail">
                 <img class="img-responsive" src="<%= campground.image %>">
@@ -25,13 +29,16 @@
                     <% if(currentUser && campground.author.id.equals(currentUser._id)){ %>
                         <a class="btn btn-xs btn-warning" href="/campgrounds/<%= campground._id %>/edit">Edit</a>
                         
-                        <form id="delete-form" action="/campgrounds/<%= campground._id %>?_method=DELETE" method="POST">
+                        <form class="delete-form" action="/campgrounds/<%= campground._id %>?_method=DELETE" method="POST">
                             <button class="btn btn-xs btn-danger">Delete</button>
                         </form>
                     <% } %>
                     
                 </div>
             </div>
+            
+            <!-- Comments begin below -->
+            
             <div class="well">
                 <div class="text-right">
                     <a class="btn btn-success" href="/campgrounds/<%= campground._id %>/comments/new">Add New Comment</a>
@@ -47,6 +54,18 @@
                             <p>
                                 <%= comment.text %>
                             </p>
+                            
+                            <!-- Show edit and delete buttons only if currentUser exists and if currentUser = comment author -->
+                            <% if(currentUser && comment.author.id.equals(currentUser._id)){ %>
+                                <a class="btn btn-xs btn-warning" 
+                                    href="/campgrounds/<%= campground._id %>/comments/<%= comment._id %>/edit">
+                                    Edit
+                                </a>
+                                <form class="delete-form" action="/campgrounds/<%= campground._id %>/comments/<%= comment._id %>?_method=DELETE" method="POST">
+                                    <!-- Using input type submit instead of button here just for variety -->
+                                    <input type="submit" class="btn btn-xs btn-danger" value="Delete">
+                                </form>
+                            <% } %>
                         </div>
                         
                     </div>

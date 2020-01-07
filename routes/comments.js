@@ -53,12 +53,85 @@ router.post("/", isLoggedIn, function(req, res){
     });
 });
 
+// EDIT comment route
+router.get("/:comment_id/edit", checkCommentOwnership, function(req, res){
+    
+    // Find the comment then render the edit comment page
+    Comment.findById(req.params.comment_id, function(err, foundComment){
+        if(err) {
+            console.log(err);
+            res.redirect("back");
+        } 
+        else {
+            // Pass the campground ID and comment object back to template
+            // We always have access to req.params.id (campground id)
+            // because of the app.use("/campgrounds/:id/comments", commentRoutes); line in app.js
+            res.render("comments/edit", {campground_id: req.params.id, comment: foundComment});
+        }
+    });
+    
+});
+
+// UPDATE comment route
+router.put("/:comment_id", checkCommentOwnership, function(req, res){
+    
+    // Find and update the correct comment object
+    Comment.findByIdAndUpdate(req.params.comment_id, req.body.comment, function(err, updatedComment){
+       if (err){
+           res.redirect("back");
+       } 
+       else {
+           res.redirect("/campgrounds/" + req.params.id);
+       }
+    });
+});
+
+// DESTROY Comment route
+router.delete("/:comment_id", checkCommentOwnership, function(req, res){
+    Comment.findByIdAndRemove(req.params.comment_id, function(err){
+        if (err){
+            res.redirect("back");
+        }
+        else {
+            res.redirect("/campgrounds/" + req.params.id);
+        }
+    });
+});
+
 // Middleware checking if user is logged in
 function isLoggedIn(req, res, next){
     if (req.isAuthenticated()) {
         return next();
     }
     res.redirect("/login");
+};
+
+// Middleware to check ownership
+function checkCommentOwnership(req, res, next){
+    // Check if User is logged in
+    if (req.isAuthenticated()){
+        
+        Comment.findById(req.params.comment_id, function(err, foundComment){
+           if (err){
+               res.redirect("back");
+           } 
+           else {
+                // Does User own the comment?
+                // Mongoose method to compare String id to Mongoose object id
+                if (foundComment.author.id.equals(req.user._id)){
+                    // This is where the next part of the code runs
+                    next();
+                }
+                else {
+                    res.redirect("back");
+                }
+           }
+        });
+    }
+    // Redirect to previous page
+    else {
+        res.redirect("back");
+    }  
 };
 
 module.exports = router;
