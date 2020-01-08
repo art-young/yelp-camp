@@ -23,13 +23,14 @@ router.get("/", function(req, res){
 router.post("/", middleware.isLoggedIn, function(req, res){
     // get data from form and add to campgrounds array
     var name = req.body.name;
+    var price = req.body.price;
     var image = req.body.image;
     var desc = req.body.description;
     var author = {
         id: req.user._id,
         username: req.user.username
     };
-    var newCampground = {name: name, image: image, description: desc, author:author};
+    var newCampground = {name: name, price: price, image: image, description: desc, author:author};
     
     // Create a new campground and save to DB
     Campground.create(newCampground, function(err, newlyCreated){
@@ -59,13 +60,14 @@ router.get("/:id", function(req, res){
     // Use mongoose populate() method before executing callback function to get 
     // the actual comment objects from the Comments collection
     Campground.findById(req.params.id).populate("comments").exec(function(err, foundCampground){
-       if (err){
-           console.log(err);
-       } 
-       else {
+        if (err || !foundCampground){
+            req.flash("error", "Campground not found.")
+            res.redirect("back");
+        } 
+        else {
             // Render show template with that campground
             res.render("campgrounds/show", {campground: foundCampground}); 
-       }
+        }
     });
     
 });
@@ -75,7 +77,13 @@ router.get("/:id/edit", middleware.checkCampgroundOwnership, function(req, res){
     
     // Find given campground and render edit page
     Campground.findById(req.params.id, function(err, foundCampground){
-        res.render("campgrounds/edit", {campground: foundCampground});
+        if (err){
+            req.flash("error", "Campground not found.");
+            res.redirect("back");
+        }
+        else {
+            res.render("campgrounds/edit", {campground: foundCampground});
+        }
     });
     
 });
@@ -94,12 +102,18 @@ router.put("/:id", middleware.checkCampgroundOwnership, function(req, res){
 });
 
 // DESTROY campground route
+// Here we use findById and later deleteOne() instead of findByIdAndRemove() because
+// the pre-hook in campground.js to delete any associated comments is invoked on
+// deleteOne().
 router.delete("/:id", middleware.checkCampgroundOwnership, function(req, res){
-    Campground.findByIdAndRemove(req.params.id, function(err){
+    Campground.findById(req.params.id, function(err, foundCampground){
         if (err){
+            req.flash("error", "Campground delete failed.");
             res.redirect("/campgrounds");
         }
         else {
+            foundCampground.remove();
+            req.flash("success", "Campground deleted.");
             res.redirect("/campgrounds");
         }
     })

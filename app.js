@@ -2,6 +2,7 @@ var express         = require("express"),
     app             = express(),
     bodyParser      = require("body-parser"),
     mongoose        = require("mongoose"),
+    flash           = require("connect-flash"),
     passport        = require("passport"),
     LocalStrategy   = require("passport-local"),
     methodOverride  = require("method-override"),
@@ -36,6 +37,9 @@ app.use(express.static(__dirname + "/public"));
 // Use method override
 app.use(methodOverride("_method"));
 
+// Use connect-flash for flash messages
+app.use(flash());
+
 // Seed Database with sample campgrounds and comments
 // seedDB();
 
@@ -52,9 +56,11 @@ passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-// Middleware to pass logged in user to every template
+// Middleware to pass logged in user and flash messages to every template
 app.use(function(req, res, next){
     res.locals.currentUser = req.user;
+    res.locals.error = req.flash("error");
+    res.locals.success = req.flash("success");
     next();
 });
 

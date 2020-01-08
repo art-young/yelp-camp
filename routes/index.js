@@ -23,10 +23,11 @@ router.post("/register", function(req, res){
     var newUser = new User({username: req.body.username});
     User.register(newUser, req.body.password, function(err, user){
         if (err) {
-            console.log(err);
-            return res.render("register");
+            req.flash("error", err.message);
+            return res.redirect("/register");
         }
         passport.authenticate("local")(req, res, function(){
+            req.flash("success", "Welcome to YelpCamp " + user.username + "!");
             res.redirect("/campgrounds");
         });
     });
@@ -34,29 +35,53 @@ router.post("/register", function(req, res){
 
 // Show login form
 router.get("/login", function(req, res){
-   res.render("login"); 
+    res.render("login"); 
 });
 
 // Handle login logic using passport middleware
-router.post("/login", passport.authenticate("local", 
-    {
-        successRedirect: "/campgrounds",
-        failureRedirect: "/login"
-    }), function(req, res){
+// router.post("/login", passport.authenticate("local", 
+//     {
+//         successRedirect: "/campgrounds",
+//         failureRedirect: "/login",
+//         failureFlash: true,
+//         successFlash: "Welcome back to YelpCamp!"
+//     }), function(req, res){
+// });
+
+// Handle login logic using custom handler so we can pull user.username for flash message
+// http://www.passportjs.org/docs/authenticate/
+router.post("/login", function(req, res, next) {
+    passport.authenticate("local", function(err, user, info) {
+        if (err) { 
+            req.flash("error", err.message);
+            return res.redirect("/login"); 
+        }
+        // User is set to false if auth fails.
+        if (!user) { 
+            req.flash("error", info.message); 
+            return res.redirect("/login"); 
+        }
+        // Establish a session manually with req.logIn
+        req.logIn(user, function(err) {
+            if (err) { 
+                req.flash("error", err.message);
+                res.redirect("/login");
+            }
+            
+            // Login success! Add custom success flash message.
+            req.flash("success", "Welcome back " + user.username + "!");
+            res.redirect("/campgrounds");
+          
+        });
+    })(req, res, next);
 });
 
 // Logout route
 router.get("/logout", function(req, res){
     req.logout();
+    req.flash("success", "Logged you out.");
     res.redirect("/campgrounds");
 });
 
-// Middleware checking if user is logged in
-function isLoggedIn(req, res, next){
-    if (req.isAuthenticated()) {
-        return next();
-    }
-    res.redirect("/login");
-};
 
 module.exports = router;
