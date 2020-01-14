@@ -25,7 +25,8 @@ mongoose.set('useUnifiedTopology', true);
 // Connect to MongoDB server
 // dev: mongodb://localhost:27017/yelp_camp
 // prod: mongodb+srv://art:dbUserPasswordart@cluster0-ihv0i.mongodb.net/test?retryWrites=true&w=majority
-mongoose.connect(process.env.DATABASEURL);
+var url = process.env.DATABASEURL || "mongodb://localhost:27017/yelp_camp";
+mongoose.connect(url);
 
 // Need this line to properly use body-parser
 app.use(bodyParser.urlencoded({extended: true}));
