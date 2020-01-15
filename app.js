@@ -1,3 +1,6 @@
+// dotenv loads environment variables from .env file into process.env (for dev env)
+require("dotenv").config();
+
 var express         = require("express"),
     app             = express(),
     bodyParser      = require("body-parser"),
@@ -23,10 +26,7 @@ mongoose.set('useCreateIndex', true);
 mongoose.set('useUnifiedTopology', true);
 
 // Connect to MongoDB server
-// dev: mongodb://localhost:27017/yelp_camp
-// prod: mongodb+srv://art:dbUserPasswordart@cluster0-ihv0i.mongodb.net/test?retryWrites=true&w=majority
-var url = process.env.DATABASEURL || "mongodb://localhost:27017/yelp_camp";
-mongoose.connect(url);
+mongoose.connect(process.env.DATABASEURL);
 
 // Need this line to properly use body-parser
 app.use(bodyParser.urlencoded({extended: true}));
