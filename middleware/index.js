@@ -18,7 +18,7 @@ middlewareObj.checkCampgroundOwnership = function(req, res, next){
             else {
                 // Does User own the campground?
                 // Mongoose method to compare String id to Mongoose object id
-                if (foundCampground.author.id.equals(req.user._id)){
+                if (foundCampground.author.id.equals(req.user._id) || req.user.isAdmin){
                     // This is where the next part of the code runs
                     next();
                 }
@@ -49,7 +49,7 @@ middlewareObj.checkCommentOwnership = function(req, res, next){
            else {
                 // Does User own the comment?
                 // Mongoose method to compare String id to Mongoose object id
-                if (foundComment.author.id.equals(req.user._id)){
+                if (foundComment.author.id.equals(req.user._id) || req.user.isAdmin){
                     // This is where the next part of the code runs
                     next();
                 }
