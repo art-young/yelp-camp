@@ -137,9 +137,9 @@ router.put("/:id", middleware.checkCampgroundOwnership, function(req, res){
 });
 
 // DESTROY campground route
-// Here we use findById and later deleteOne() instead of findByIdAndRemove() because
+// Here we use findById() and later remove() instead of findByIdAndRemove() because
 // the pre-hook in campground.js to delete any associated comments is invoked on
-// deleteOne().
+// remove().
 router.delete("/:id", middleware.checkCampgroundOwnership, function(req, res){
     Campground.findById(req.params.id, function(err, foundCampground){
         if (err){

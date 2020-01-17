@@ -46,6 +46,8 @@ app.use(flash());
 // Seed Database with sample campgrounds and comments
 // seedDB();
 
+// Use Moment JS for campground and comment age
+app.locals.moment = require('moment');
 
 // PASSPORT CONFIG
 app.use(require("express-session")({
