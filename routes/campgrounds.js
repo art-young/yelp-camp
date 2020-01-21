@@ -15,16 +15,36 @@ var geocoder = NodeGeocoder(options);
 
 // INDEX route - shows all campgrounds
 router.get("/", function(req, res){
-     
-    // Get all campgrounds from DB
-    Campground.find({}, function(err, allCampgrounds){
-      if (err){
-          console.log(err);
-      } 
-      else {
-          res.render("campgrounds/index", {campgrounds:allCampgrounds, page: "campgrounds"});
-      }
-    });
+    // If there is a search query, find matching campgrounds only
+    if (req.query.search) {
+        // Fuzzy search, regex
+        // gi flags - global, ignore case?
+        const regex = new RegExp(escapeRegex(req.query.search), 'gi');
+        var noMatch;
+        Campground.find({$or: [{name: regex,}, {location: regex}, {"author.username":regex}]}, function(err, allCampgrounds){
+            if (err){
+                console.log(err);
+            } 
+            else {
+                if (allCampgrounds.length < 1) {
+                    noMatch = "No results found, please try again.";
+                }
+                res.render("campgrounds/index", {campgrounds:allCampgrounds, noMatch:noMatch, page: "campgrounds"});
+            }
+        });
+    }
+    else {
+        // Get all campgrounds from DB
+        Campground.find({}, function(err, allCampgrounds){
+            if (err){
+                console.log(err);
+            } 
+            else {
+                res.render("campgrounds/index", {campgrounds:allCampgrounds, noMatch:noMatch, page: "campgrounds"});
+            }
+        });
+    }
+    
     
 });
 
@@ -153,5 +173,10 @@ router.delete("/:id", middleware.checkCampgroundOwnership, function(req, res){
         }
     })
 });
+
+// For fuzzy search
+function escapeRegex(text) {
+    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+};
 
 module.exports = router;
